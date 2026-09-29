@@ -1,170 +1,71 @@
-# Retain — AI Customer Win-Back System
+# Retain
 
-> **Retain automatically detects when a customer goes silent and sends them a personalized WhatsApp message to bring them back.**
+Never lose a customer quietly. Retain logs who visited your shop, watches who's
+gone quiet, and hands you a ready-to-send WhatsApp message — you tap "Send,"
+your own WhatsApp opens, nothing routes through Meta's Cloud API.
 
-Built for Nigerian SMEs. No app to download. No complicated setup. Just WhatsApp.
+## Stack
 
----
+React + TypeScript + Vite, Tailwind CSS, installable as a PWA.
 
-## 🚀 Live Demo
+**No login, no server.** Your shop's data (shop name, customers, visit
+history) lives only in this browser, on this device, in `localStorage` —
+nothing is sent anywhere. That's a deliberate trade: no signup step to lose
+people at the door, and no account anywhere that could ever be breached. The
+cost is that clearing browser data, or switching phones, loses the list
+unless it's exported first — use "Export my list" on the Today screen
+regularly, or before switching devices.
 
-🌐 Landing Page: [reta-n.vercel.app](https://reta-n.vercel.app)  
-📊 Dashboard: [reta-n.vercel.app/dashboard](https://reta-n.vercel.app/dashboard)
+## 1. Install
 
----
-
-## 💡 The Problem
-
-Nigerian small businesses — salons, pharmacies, restaurants, shops — lose customers silently. A customer visits once, twice, then disappears. The business owner has no system to notice, no way to follow up, and no time to chase everyone manually.
-
-**Retain solves this with zero friction.**
-
----
-
-## ✅ How It Works
-
-1. **Log visits via WhatsApp** — Business owner sends `"Sarah visited"` to Retain on WhatsApp. That's it.
-2. **AI monitors silence** — Retain tracks every customer's last visit date automatically.
-3. **Win-back fires automatically** — When a customer goes silent beyond the threshold, Retain generates a personalized WhatsApp message using Gemini AI and sends it.
-
-No app. No dashboard required. Just WhatsApp.
-
----
-
-## 🛠 Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Backend | Node.js + Express |
-| Hosting | Vercel (Serverless) |
-| Database | Supabase (PostgreSQL) |
-| AI | Google Gemini 1.5 Flash |
-| Messaging | Meta WhatsApp Cloud API |
-| Payments | Paystack |
-| Frontend | Vanilla HTML/CSS/JS |
-
----
-
-## 📁 Project Structure
-
-```
-├── index.js          # WhatsApp webhook + bot logic
-├── winback.js        # Daily win-back cron job
-├── index.html        # Landing page
-├── dashboard.html    # CRM dashboard
-├── vercel.json       # Vercel config + cron schedule
-└── .env              # Environment variables (not committed)
+```bash
+npm install
 ```
 
----
+## 2. Run it
 
-## ⚙️ Environment Variables
-
-Create a `.env` file in the root:
-
-```env
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_anon_key
-GEMINI_API_KEY=your_gemini_api_key
-META_PHONE_NUMBER_ID=your_meta_phone_number_id
-META_ACCESS_TOKEN=your_meta_access_token
-WEBHOOK_VERIFY_TOKEN=your_custom_verify_token
+```bash
+npm run dev
 ```
 
----
+That's the whole setup — no environment variables, no accounts to create.
 
-## 🗄️ Database Schema (Supabase)
+## 3. Add real PWA icons
 
-```sql
--- Businesses registered via WhatsApp
-businesses (id, name, whatsapp_number, category, inactivity_threshold_days, is_active)
+`vite.config.ts` references `/icon-192.png` and `/icon-512.png` for the
+install prompt. Drop your own PNGs into `public/` at those names and sizes —
+a simple green square with the white bolt (see `public/favicon.svg`) works
+well.
 
--- Customers tracked per business
-customers (id, name, phone_number, business_id, last_purchase_at, status)
+## What's stubbed vs. real
 
--- Win-back messages sent
-messages (id, business_id, customer_id, content, sent_at, customer_returned)
+- **Storage** — fully real, backed by `localStorage` (see `src/lib/storage.ts`).
+  Nothing is mocked; every screen reads and writes real data on this device.
+- **Free-plan customer limit (20)** — enforced in `ShopContext.tsx`.
+- **Payments** — not wired up. When you're ready to charge for Pro, the
+  simplest path without a server is Paystack's client-side popup
+  (`react-paystack`), which on success just flips the local `shop.plan` to
+  `'pro'`. If you later want billing to survive a device switch, that's the
+  point at which you'd introduce a lightweight account (see below).
+- **"Brought back" / "Nudges sent" counts** — reflect what the owner has
+  tapped in Retain (Send / Came back), not delivery or read receipts. wa.me
+  can't report those back, so the copy on Today is intentionally honest about
+  that.
+- **Push notifications** ("3 people went quiet today") — not included; this
+  needs a server to schedule them, which is out of scope for a local-first
+  app. A same-device alternative is a local reminder via the Notifications
+  API when the PWA is opened.
 
--- Onboarding session state
-sessions (id, phone_number, step, data)
-```
+## If you want optional cloud backup later
 
----
+Keep the app local-first by default, and add an *optional* "Back up my list"
+button that only syncs to a server (e.g. Supabase) when someone deliberately
+taps it — asking for just an email at that moment, not a signup gate up
+front. Most owners will never see it.
 
-## 🔄 Cron Job
+## Design tokens
 
-The win-back job runs daily at **9:00 AM** via Vercel Cron:
-
-```json
-{
-  "crons": [{ "path": "/winback", "schedule": "0 9 * * *" }]
-}
-```
-
-It scans all customers whose `last_purchase_at` exceeds their business's `inactivity_threshold_days`, generates a personalized message with Gemini AI, and sends it via WhatsApp.
-
----
-
-## 💳 Pricing
-
-| Plan | Price | Features |
-|---|---|---|
-| Free | ₦0 | 1 business, up to 20 customers |
-| Pro | ₦5,000/mo | Unlimited businesses & customers, priority support |
-
-Payments processed via **Paystack** (test mode).
-
----
-
-## 🚀 Deploy Your Own
-
-1. Clone the repo
-   ```bash
-   git clone https://github.com/Fulfilled234/Reta-n.git
-   cd Reta-n
-   ```
-
-2. Install dependencies
-   ```bash
-   npm install
-   ```
-
-3. Set up environment variables on Vercel
-
-4. Connect your Meta WhatsApp Cloud API webhook to:
-   ```
-   https://your-vercel-url.vercel.app/webhook
-   ```
-
-5. Push to GitHub — Vercel auto-deploys
-
----
-
-## 📱 WhatsApp Commands
-
-| Command | Action |
-|---|---|
-| `[Name] visited` | Log a customer visit |
-| `Summary` | See today's visit count |
-| `Help` | Show all commands |
-
----
-
-## 🏆 Built For
-
-**Startup Abuja Innovation Challenge '26** — May 2026  
-Category: AI / SME Tools / Africa-first Products
-
----
-
-## 👨‍💻 Author
-
-**Olajide Michael Ayomide**  
-Full-Stack Developer · Nigeria  
-[GitHub](https://github.com/Fulfilled234)
-
----
-
-## 📄 License
-
-MIT License — free to use, modify, and distribute.
+See `tailwind.config.js` — green (`brand`) for the logo and primary actions,
+amber (`quiet`) for customers going quiet, terracotta (`lost`) for long-silent
+customers, and WhatsApp's own green reserved only for the send button, so
+colour carries meaning instead of decorating.

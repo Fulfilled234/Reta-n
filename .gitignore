@@ -1,3 +1,6 @@
-node_modules/
+node_modules
+dist
+dist-ssr
 .env
-storage/
+*.local
+.DS_Store
