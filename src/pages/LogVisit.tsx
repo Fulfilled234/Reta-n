@@ -20,11 +20,11 @@ export default function LogVisit() {
     return customers.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 6)
   }, [query, customers])
 
-  async function handleReturningVisit(customerId: string) {
+  async function handleReturningVisit(customerId: string, name: string) {
     setBusy(true)
     await markCameBack(customerId)
     setBusy(false)
-    navigate('/today')
+    navigate('/today', { state: { savedName: name } })
   }
 
   const [limitError, setLimitError] = useState<string | null>(null)
@@ -44,7 +44,7 @@ export default function LogVisit() {
       setLimitError(error)
       return
     }
-    navigate('/today')
+    navigate('/today', { state: { savedName: newName.trim() } })
   }
 
   return (
@@ -73,7 +73,7 @@ export default function LogVisit() {
               <button
                 key={c.id}
                 disabled={busy}
-                onClick={() => handleReturningVisit(c.id)}
+                onClick={() => handleReturningVisit(c.id, c.name)}
                 className="w-full flex items-center justify-between rounded-card border border-line bg-card px-4 py-3 text-left disabled:opacity-60"
               >
                 <div>

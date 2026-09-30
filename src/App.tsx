@@ -3,6 +3,9 @@ import Landing from './pages/Landing'
 import ShopSetup from './pages/ShopSetup'
 import Today from './pages/Today'
 import LogVisit from './pages/LogVisit'
+import Customers from './pages/Customers'
+import CustomerDetail from './pages/CustomerDetail'
+import Settings from './pages/Settings'
 import { Privacy, Terms } from './pages/Legal'
 import { useShop } from './context/ShopContext'
 
@@ -41,6 +44,30 @@ export default function App() {
         element={
           <RequireShop>
             <LogVisit />
+          </RequireShop>
+        }
+      />
+      <Route
+        path="/customers"
+        element={
+          <RequireShop>
+            <Customers />
+          </RequireShop>
+        }
+      />
+      <Route
+        path="/customers/:id"
+        element={
+          <RequireShop>
+            <CustomerDetail />
+          </RequireShop>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <RequireShop>
+            <Settings />
           </RequireShop>
         }
       />

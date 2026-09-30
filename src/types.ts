@@ -10,6 +10,12 @@ export interface Shop {
   created_at: string
 }
 
+export interface Visit {
+  id: string
+  date: string
+  amount: number | null
+}
+
 export interface Customer {
   id: string
   shop_id: string
@@ -20,6 +26,9 @@ export interface Customer {
   status: 'active' | 'nudged' | 'lost'
   nudged_at: string | null
   created_at: string
+  visits: Visit[]
+  nudges_tapped: number
+  times_came_back: number
 }
 
 export const SHOP_TYPE_LABEL: Record<ShopType, string> = {
